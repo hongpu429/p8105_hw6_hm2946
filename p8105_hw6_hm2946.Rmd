@@ -119,3 +119,22 @@ homi_cide = read_csv("data/homicide-data.csv") %>%
   filter(victim_race == c("White","Black")) %>% 
   filter(city_state != c("Dallas,TX", "Phoenix,AZ", "Kansas City,MO", "Tulsa,AL"))
 ```
+
+#### Baltimore
+```{r}
+baltimore_homi = homi_cide %>% 
+  filter(city_state ==  "Baltimore,MD")
+
+balitmore_logistic = baltimore_homi %>% 
+  glm(resolved ~ victim_age + victim_race + victim_sex, data = ., family = binomial()) 
+
+balitmore_logistic %>% 
+  broom::tidy() %>% 
+  mutate(OR = exp(estimate),
+         ci_lower = exp(estimate - 1.96*std.error),
+         ci_upper = exp(estimate + 1.96*std.error)) %>%
+  filter(term == "victim_sexMale") %>%
+  select(term, log_OR = estimate, OR, ci_lower, ci_upper) %>%
+  knitr::kable(digits = 3)
+```
+
