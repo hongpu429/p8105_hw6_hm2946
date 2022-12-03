@@ -133,8 +133,35 @@ balitmore_logistic %>%
   mutate(OR = exp(estimate),
          ci_lower = exp(estimate - 1.96*std.error),
          ci_upper = exp(estimate + 1.96*std.error)) %>%
-  filter(term == "victim_sexMale") %>%
+  filter(term == "victim_sexMale") %>% 
   select(term, log_OR = estimate, OR, ci_lower, ci_upper) %>%
+  knitr::kable(digits = 3)
+```
+
+#### Each city
+```{r}
+each_homi = 
+  homi_cide %>% 
+  nest(-city_state) %>% 
+  mutate(
+    models = map(data,~glm(resolved ~ victim_age + victim_race + victim_sex, data = .x, family = binomial())),
+    results = map(models, broom::tidy)
+    ) %>% 
+  select(-data, -models) %>% 
+  unnest(results) %>% 
+  select(city_state, term, estimate, std.error) %>% 
+  filter(term == "victim_sexMale") %>%
+  pivot_wider(
+    names_from = term, values_from = c(estimate,std.error)
+    ) %>% 
+  select(city_state, "estimate" = estimate_victim_sexMale, 
+         "std" = std.error_victim_sexMale) %>% 
+  mutate(OR = exp(estimate),
+         ci_lower = exp(estimate - 1.96 * std),
+         ci_upper = exp(estimate + 1.96 * std)) %>% 
+  select(-estimate,-std)
+
+each_homi %>% 
   knitr::kable(digits = 3)
 ```
 
