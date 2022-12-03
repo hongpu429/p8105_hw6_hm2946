@@ -64,6 +64,16 @@ rsquared_weather %>%
 ```
 *The graph is skewed to the left and has some outliers.*
 
+```{r}
+rsquared_quantiles = 
+  rsquared_weather %>% 
+  select(r.squared) %>%
+  arrange(r.squared)
+
+rsquared_quantiles[c(25,975),]
+```
+*95% CI for r.squared is (0.895,0.927)*
+
 *Plot log_b0b1*
 ```{r}
 log_weather = 
@@ -85,3 +95,13 @@ log_weather %>%
   ggplot(aes(x = log_b0b1)) + geom_density()
 ```
 *The graph is skewed to the left and has some outliers.*
+
+```{r}
+log_quantiles = 
+  log_weather %>% 
+  select(log_b0b1) %>%
+  arrange(log_b0b1)
+
+log_quantiles[c(25,975),]
+```
+*95% CI for log is (1.96,2.06)*
