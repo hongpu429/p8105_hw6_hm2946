@@ -9,6 +9,7 @@ output: github_document
 library(tidyverse)
 library(viridis)
 library(modelr)
+library(mgcv)
 library(p8105.datasets)
 set.seed(1)
 
@@ -175,3 +176,18 @@ each_homi %>%
   theme(axis.text.x = element_text(angle = 80, hjust = 1))
 ```
 *The higher the OR, the higher probabality it has a larger CI.*
+
+#### Problem 3
+
+```{r}
+bw_data = read_csv("data/birthweight.csv") %>% 
+  drop_na() %>% 
+  mutate(babysex = as.factor(babysex),
+         malform = as.factor(malform),
+         mrace = as.factor(mrace),
+         frace = as.factor(frace),
+         id = 1:4342,
+         id = as.factor(id)) %>% 
+  select(id,everything())
+```
+
