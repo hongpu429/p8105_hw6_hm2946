@@ -191,3 +191,45 @@ bw_data = read_csv("data/birthweight.csv") %>%
   select(id,everything())
 ```
 
+```{r}
+mod1 = lm(bwt~wtgain + delwt + momage, data = bw_data)
+
+bw_data %>% 
+  modelr::add_residuals(mod1) %>% 
+  modelr::add_predictions(mod1) %>% 
+  ggplot(aes(x = pred, y = resid)) +
+  geom_point(alpha = .5, color = "red") +
+  labs(title = "Residuals vs Predicted",
+       x = "Predicted value",
+       y = "Residuals")
+```
+*I use mother’s weight gain during pregnancy (pounds), mother’s weight at delivery (pounds), and mother’s age at delivery (years) as predictors(main effects only). As instinctively, i assume mom's conditions are more relevant to baby's birth weight.*
+
+```{r}
+mod2 = lm(bwt ~ blength + gaweeks, data = bw_data)
+mod3 = lm(bwt ~ bhead + blength + babysex + bhead*blength + bhead*babysex + blength*babysex, data = bw_data)
+```
+
+```{r}
+cv_df = crossv_mc(bw_data, 100) 
+
+cv_df %>% 
+  mutate(
+    mod_1  = map(train, ~lm(bwt~wtgain + delwt + momage, data = .x)),
+    mod_2  = map(train, ~lm(bwt ~ blength + gaweeks, data = .x)),
+    mod_3  = map(train, ~lm(bwt ~ bhead + blength + babysex + bhead*blength + bhead*babysex + blength*babysex, data = .x))) %>% 
+  mutate(
+    rmse_1 = map2_dbl(mod_1, test, ~rmse(model = .x, data = .y)),
+    rmse_2 = map2_dbl(mod_2, test, ~rmse(model = .x, data = .y)),
+    rmse_3 = map2_dbl(mod_3, test, ~rmse(model = .x, data = .y))) %>% 
+  select(starts_with("rmse")) %>% 
+  pivot_longer(
+    everything(),
+    names_to = "model", 
+    values_to = "rmse",
+    names_prefix = "rmse_") %>% 
+  mutate(model = fct_inorder(model)) %>% 
+  ggplot(aes(x = model, y = rmse)) + geom_violin()
+
+```
+
